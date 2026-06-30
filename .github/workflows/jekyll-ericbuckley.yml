@@ -1,0 +1,62 @@
+# Builds and deploys the Jekyll site to the gh-pages branch of
+# ericbuckley/NEDSS-SystemAdminGuide when changes are pushed to eb/rtr-7_13-changes.
+#
+# Prerequisites (one-time setup in your fork):
+#   1. Go to Settings > Pages > Source: Deploy from a branch > gh-pages / root
+#
+# Preview site URL: https://ericbuckley.github.io/NEDSS-SystemAdminGuide/
+
+name: Deploy Jekyll site to ericbuckley Pages
+
+on:
+  push:
+    branches: ["eb/rtr-7_13-changes"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          cache-version: 0
+
+      - name: Cleanup _guide_preview
+        run: |
+          find _guide_preview -name '*.md' | while read file; do
+            awk '
+              BEGIN { in_front=0 }
+              {
+                if ($0 ~ /^---$/) {
+                  in_front = 1 - in_front
+                }
+                if (in_front && ($0 ~ /^(parent:|grand_parent:|nav_order:|has_children:)/)) {
+                  next
+                }
+                print
+              }
+            ' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+          done
+
+      - name: Build with Jekyll
+        run: bundle exec jekyll build --baseurl "/NEDSS-SystemAdminGuide"
+        env:
+          JEKYLL_ENV: production
+
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./_site
