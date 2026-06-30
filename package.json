@@ -1,0 +1,16 @@
+{
+  "name": "nedss-systemadminGuide",
+  "private": true,
+  "scripts": {
+    "lint": "markdownlint-cli2 \"docs/**/*.md\" \"*.md\"",
+    "link-check:internal": "node scripts/check-internal-links.mjs",
+    "link-check:github": "node scripts/check-github-links.mjs",
+    "link-check:github:changed": "node scripts/check-github-links.mjs --changed",
+    "link-check:external": "node scripts/check-external-links.mjs",
+    "link-check": "npm run link-check:internal && npm run link-check:external && npm run link-check:github:changed"
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "^0.22.0",
+    "markdown-link-check": "^3.12.0"
+  }
+}

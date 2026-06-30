@@ -1,0 +1,149 @@
+# NBS System Admin Guide — Contributor Workflow
+
+## Setup
+
+1. Install [VS Code](https://code.visualstudio.com/download)
+   - **Windows only:** also install [Git for Windows](https://git-scm.com/download/win). This gives you the `git` command and the Git Bash terminal you'll use for all commands in this guide.
+2. Install the [GitHub Repositories extension](https://marketplace.visualstudio.com/items?itemName=GitHub.remotehub), if you don't have it already.
+3. Open VS Code and select **Clone Git Repository** on the splash page
+4. Paste <https://github.com/CDCgov/NEDSS-SystemAdminGuide> and press Enter
+5. Choose your root user folder as the location
+6. Select **Yes** when prompted to open the repo folder
+7. Open a terminal: **Terminal > New Terminal**
+
+Your prompt should look something like:
+
+**macOS (zsh):**
+```
+admin@your-MacBook-Pro NEDSS-SystemAdminGuide %
+```
+
+**Windows (Git Bash):**
+```
+admin@MACHINE-NAME MINGW64 ~/NEDSS-SystemAdminGuide (main)
+$
+```
+
+The `%` vs `$` difference and the extra path info on Windows are normal.
+
+### One-time git configuration
+
+Run these once on your machine after setup:
+
+**Auto-track remote branches** — lets you run `git push` on a new branch without needing `-u origin branchname`:
+```bash
+git config --global push.autoSetupRemote true
+```
+
+**Tab completion for branch names** — press Tab after `git checkout ` or `git merge ` to autocomplete branch names.
+
+- **macOS (zsh, the default shell):** zsh includes git completion but it must be initialized. Add these lines to your `~/.zshrc` if they aren't already there:
+  ```bash
+  autoload -Uz compinit && compinit
+  ```
+  Then reload your shell or open a new terminal:
+  ```bash
+  source ~/.zshrc
+  ```
+- **macOS (bash):**
+  ```bash
+  brew install bash-completion
+  ```
+  Then add this line to your `~/.bash_profile`:
+  ```bash
+  [[ -r "$(brew --prefix)/etc/profile.d/bash_completion.sh" ]] && . "$(brew --prefix)/etc/profile.d/bash_completion.sh"
+  ```
+- **Windows (Git Bash):** included with [Git for Windows](https://git-scm.com/download/win) — no action needed.
+
+
+## Daily Workflow
+
+### 1. Start from an up-to-date `main`
+
+```bash
+git checkout main
+git pull
+git checkout -b your-initials/short-description
+```
+
+### 2. Make your changes and commit
+
+```bash
+git add <changed files>
+git commit -m "Describe what you changed"
+```
+
+Repeat as needed. Push your feature branch to keep it backed up on remote:
+
+```bash
+git push -u origin your-initials/short-description
+```
+
+Or if you set up automatic remote tracking, just `git push`.
+
+For commit message conventions, see [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+### 3. Stage for stakeholder review
+
+From your source branch, push it directly to the remote `preview` branch:
+
+```bash
+git checkout your-initials/short-description
+git push origin your-initials/short-description:preview --force
+```
+
+This replaces `preview` with the exact state of your source branch and triggers the preview site deploy.
+
+Wait about 5 minutes for your changes to appear on the preview site:
+https://jburgh.github.io/CDCgov-NEDSS-SystemAdminGuide-preview/
+
+Share that URL with stakeholders and collect feedback.
+
+### 4. Iterate
+
+For each round of revisions, update your source branch and force-push it to `preview` again:
+
+```bash
+git checkout your-initials/short-description
+# make edits
+git add <changed files>
+git commit -m "Updates from review"
+git push origin your-initials/short-description:preview --force
+```
+
+### 5. Merge to `main` when approved
+
+Open a PR on GitHub from your **feature branch** to `main` — not from `preview` to `main`. For PR description standards and review expectations, see [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+Before merging, add or update an entry in `docs/revision-history.md` for any new or updated content that will be merged to `main`.
+
+Go to https://github.com/CDCgov/NEDSS-SystemAdminGuide — GitHub will show a prompt to open a PR for your recently pushed branch.
+
+After the PR is approved and merged, the production site updates automatically:
+https://cdcgov.github.io/NEDSS-SystemAdminGuide/
+
+### 6. Clean up
+
+```bash
+git checkout main
+git pull
+git branch -d your-initials/short-description
+git push origin --delete your-initials/short-description
+```
+
+
+## Useful Commands
+
+| Command | What it does |
+|---------|--------------|
+| `git status` | Show current branch and any uncommitted changes |
+| `git branch` | List all local branches |
+| `git checkout branchname` | Switch to an existing branch |
+| `git pull` | Pull latest changes from remote |
+| `git log --oneline -10` | See last 10 commits |
+
+
+## Further Reading
+
+- [Five rules of Git hygiene](https://cbea.ms/git-commit/)
+- [GitHub Docs](https://docs.github.com)
